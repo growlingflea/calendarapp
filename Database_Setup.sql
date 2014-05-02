@@ -28,7 +28,7 @@ CREATE TABLE `departments` (
 	department_tla varchar(4) NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY (department_tla),
-	CONSTRAINT ScheduleTLA FOREIGN KEY (department_tla) REFERENCES course_schedule (department) ON UPDATE CASCADE ON DELETE RESTRICT
+	-- CONSTRAINT ScheduleTLA FOREIGN KEY (department_tla) REFERENCES course_schedule (department) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE = InnoDB;
 
 CREATE INDEX `instructor_name_schedule` on `course_schedule` (instructor);

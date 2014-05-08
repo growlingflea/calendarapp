@@ -1,3 +1,6 @@
+#Submitted by Dan Pflieger
+#This is the sample code provided by Google, for writing a first app.
+
 import gflags
 import httplib2
 
@@ -15,8 +18,8 @@ FLAGS = gflags.FLAGS
 # applications
 # The client_id and client_secret can be found in Google Developers Console
 FLOW = OAuth2WebServerFlow(
-    client_id='1025374351820.apps.googleusercontent.com',
-    client_secret='03Cj1hepaA5_9rFsdPSLciX8',
+    client_id='1647865129103.apps.googleusercontent.com',
+    client_secret='nCSyQgOYBHRJtmVP3irdL495',
     scope='https://www.googleapis.com/auth/calendar',
     user_agent='Capstone/v1')
 

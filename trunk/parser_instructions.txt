@@ -1,0 +1,24 @@
+Parser:
+
+Current version: parse_v3.py
+
+The program can be run either via the command line or the python GUI.
+Currently the option to select a term other than Spring 2014 is commented out.  If it were not commented out:
+	- Using the command line the command to run the program would be python parse_v3.py Term Year
+	- If the user does not enter the Term Year arguments in the command line, the program will prompt the user to enter the Term and Year values.
+	
+The program then copies the raw HTML code from the http://catalog.oregonstate.edu web page for the selected term.  It is stored in the rawSrc.txt file, this file is a "temporary" file and will be rewritten by later portions of the code.   
+This raw HTML code is parsed to remove all the links for the schedules of each department.  The URLs for the links are edited to filter the schedules to only include the Term, Sec, and Instructor for each course.  This list is stored in linksSrc.txt.  This file is not rewritten by the program.
+The raw HTML code is also parsed to create a list of courses and acronymns for each course that are stored in a list in the departments.txt file.
+The list in the linksSrc.txt file are then looped through to visit each site, copy the raw HTML code into the rawSrc.txt file, then parse the data from each site into the schedule.txt file.  The schedule.txt file, when complete, contains data for each course, including the department acronym and course number, the section number, the instructor, and the days of the week and start and end time of the course.
+
+Update the database:
+
+Current version:  update_db.py
+
+This program will need to be combined with the parser as a single program, but currently is run separately.  When it is merged with the parser into a single program, minor edits will need made to allow the program to name the tables for the user defined term.  Currently, the progam is hard coded to use Spring 2014.
+The program can be run either via the command line or the python GUI.  Using the command line the command to run the program would simply be python update_db.py with no additional arguments needed.
+
+The program uses the information in the departments.txt and schedule.txt files created by the parser and formats and adds the information into two different database tables.
+The departments.txt file populates a table, called Departments_Sp14, with a unique auto incrementing id number, the department name, and the department_tla (for the department acronymn) for each department.
+The schedule.txt file populates a table, called Schedule_Sp14, with a unique auto incrementing id number, the department_tla (for the department acronymn), the course id number, the section id number, the instructor, which day of the week the course meets, the start time and the end time for each unique course/section combination.

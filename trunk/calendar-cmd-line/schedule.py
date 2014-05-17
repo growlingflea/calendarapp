@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-"""Command-line skeleton application for Calendar API.
+"""Command-line application for CS419 Project
 Usage:
-  $ python sample.py
+  $ python schedule.py
 
 You can also get help on all the command-line flags the program understands
 by running:
 
-  $ python sample.py --help
+  $ python schedule.py --help
 
 """
 
@@ -17,9 +17,11 @@ import os
 import sys
 import logging
 import curses
+import time
 import datetime
 
 from os import system
+from rfc3339 import rfc3339
 from apiclient import discovery
 from oauth2client import file
 from oauth2client import client
@@ -49,25 +51,36 @@ FLOW = client.flow_from_clientsecrets(CLIENT_SECRETS,
     ],
     message=tools.message_if_missing(CLIENT_SECRETS))
 
+#Ask user if they want to specify a time window, or the default window
+def ask_default_window(screen):
+  screen.clear()
+  screen.border(0)
+  screen.addstr(2, 2, "Set time and date window for availability? (Enter \"no\" for default window)")
+  screen.addstr(4, 3, "Please enter a number...")
+  screen.addstr(5, 4, "1 - Yes")
+  screen.addstr(6, 4, "2 - No")
+  screen.refresh()
+  input = screen.getch()
+  return input
 
 def get_param(prompt_string,screen):
-	screen.clear()
-	screen.border(0)
-	screen.addstr(2, 2, prompt_string)
-	screen.refresh()
-	input = screen.getstr(10, 10, 60)
-	return input
+  screen.clear()
+  screen.border(0)
+  screen.addstr(2, 2, prompt_string)
+  screen.refresh()
+  input = screen.getstr(10, 10, 60)
+  return input
 
 def execute_cmd(cmd_string):
-	system("clear")
-	a = system(cmd_string)
-	print ""
-	if a == 0:
-		print "Command executed correctly"
-	else:
-		print "Command terminated with error"
-	raw_input("Press enter")
-	print ""
+  system("clear")
+  a = system(cmd_string)
+  print ""
+  if a == 0:
+    print "Command executed correctly"
+  else:
+    print "Command terminated with error"
+  raw_input("Press enter")
+  print ""
 
 
 def main(argv):
@@ -103,50 +116,61 @@ def main(argv):
   x = 0
 
   while x != ord('4'):
-	  screen = curses.initscr()
+    screen = curses.initscr()
 
-	  screen.clear()
-	  screen.border(0)
-	  screen.addstr(2, 2, "CS419 Project")
-	  screen.addstr(4, 3, "Please enter a number...")
-	  screen.addstr(5, 4, "1 - List Contact's Calendars")
-	  screen.addstr(6, 4, "2 - List Calendar Events")
-	  screen.addstr(7, 4, "3 - Check Contact Availability")
-	  screen.addstr(8, 4, "4 - Exit")
-	  screen.addstr(9, 0, "")
-	  screen.refresh()
+    screen.clear()
+    screen.border(0)
+    screen.addstr(2, 2, "CS419 Project")
+    screen.addstr(4, 3, "Please enter a number...")
+    screen.addstr(5, 4, "1 - List Contact's Calendars")
+    screen.addstr(6, 4, "2 - List Calendar Events")
+    screen.addstr(7, 4, "3 - Check Contact Availability")
+    screen.addstr(8, 4, "4 - Exit")
+    screen.addstr(9, 0, "")
+    screen.refresh()
 
-	  x = screen.getch()
+    x = screen.getch()
 
-	  if x == ord('1'):
-		  curses.endwin()
-#		  execute_cmd("python sample.py")
-		  system("clear")
-		  list_calendars(service)
-		  print ""
-		  raw_input("Press enter")
-		  print ""
-	  if x == ord('2'):
-		  curses.endwin()
-		  system("clear")
-		  list_events(service)
-		  print ""
-		  raw_input("Press enter")
-		  print ""
-	  if x == ord('3'):
-		  username = get_param("Enter the username:",screen)
-		  curses.endwin()
-		  system("clear")
-		  check_contact_availability(service,username,screen)
-		  print ""
-		  raw_input("Press enter")
-		  print ""
+    if x == ord('1'):
+      curses.endwin()
+      system("clear")
+      list_calendars(service)
+      print ""
+      raw_input("Press enter")
+      print ""
+    if x == ord('2'):
+      curses.endwin()
+      system("clear")
+      list_events(service)
+      print ""
+      raw_input("Press enter")
+      print ""
+    if x == ord('3'):
+      startWindow = endWindow = None
+      username = get_param("Enter the username:",screen)
+      defaultWindow = ask_default_window(screen)
+      if defaultWindow == ord('1'):
+        #TODO: Implement curses menu to obtain date and time to create datetime object.
+        startWindow = get_param("Enter start time and date:", screen)
+        endWindow = get_param("Enter end time and date:", screen)
+      else:
+        startWindow = datetime.datetime.today()
+        endWindow = startWindow + datetime.timedelta(weeks = 1)
+        startWindow = rfc3339(startWindow)
+        endWindow = rfc3339(endWindow)
+      curses.endwin()
+      system("clear")
+      check_contact_availability(service,username,screen,startWindow,endWindow)
+      print ""
+      raw_input("Press enter")
+      print ""
 
   curses.endwin()
 
 
 def list_calendars(service):
   # Returns entries on the user's calendar list.
+  #TODO: remove
   print ("List of calendars:")
   print
   page_token = None
@@ -160,6 +184,7 @@ def list_calendars(service):
 
 def list_events(service):
   # Returns events on a specific calendar
+  #TODO: remove
   print ("List of events:")
   print
   page_token = None
@@ -171,32 +196,22 @@ def list_events(service):
     if not page_token:
       break
 
-def check_contact_availability(service,username,screen):
+def check_contact_availability(service,username,screen,startWindow,endWindow):
   # Returns events on a specific calendar
   print ("List of events:")
   page_token = None
   while True:
-    events = service.events().list(calendarId=username, pageToken=page_token, timeMax='2014-05-15T00:00:00+00:00', timeMin='2014-05-08T00:00:00+00:00').execute()
+    #query google db
+    events = service.events().list(calendarId=username, pageToken=page_token, timeMax=endWindow, timeMin=startWindow).execute()    
+    #TODO: query mysql db
+    #TODO: logic to get open times between 8am and 6pm
     for idx,event in enumerate(events['items']):
       print idx
       print "start time:", event['start']['dateTime']
       print "end   time:", event['end']['dateTime']
-      #print event['kind']
     page_token = events.get('nextPageToken')
     if not page_token:
       break
 
-# For more information on the Calendar API you can visit:
-#
-#   https://developers.google.com/google-apps/calendar/firstapp
-#
-# For more information on the Calendar API Python library surface you
-# can visit:
-#
-#   https://developers.google.com/resources/api-libraries/documentation/calendar/v3/python/latest/
-#
-# For information on the Python Client Library visit:
-#
-#   https://developers.google.com/api-client-library/python/start/get_started
 if __name__ == '__main__':
   main(sys.argv)
